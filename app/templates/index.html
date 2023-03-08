@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+
+<title> Index page </title>
+
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+   integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+   crossorigin=""></script>
+   
+
+</head>
+<body>
+<h1> Bucharest Bus Live Map </h1>
+
+ <div id="map" style="width:900px; height:600px">
+ </div>
+
+<script>
+
+var map = L.map('map').setView([44.439663, 26.096306], 14);
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+
+mapMarkers1 = [];
+mapMarkers2 = [];
+mapMarkers3 = [];
+
+var source = new EventSource('/topic/geodata_final');
+
+source.addEventListener('message', function(e){
+console.log('Message');
+obj = JSON.parse(e.data);
+console.log(obj);
+
+if(obj.busline=='00001'){
+	for(var i = 0; i < mapMarkers1.length; i++){
+		map.removeLayer(mapMarkers1[i]);
+	}
+	marker1 = L.marker([obj.latitude, obj.longitude]).addTo(map);
+	mapMarkers1.push(marker1);
+}
+
+if(obj.busline=='00002'){
+	for(var i = 0; i < mapMarkers2.length; i++){
+		map.removeLayer(mapMarkers2[i]);
+	}
+	marker2 = L.marker([obj.latitude, obj.longitude]).addTo(map);
+	mapMarkers2.push(marker2);
+}
+
+if(obj.busline=='00003'){
+	for(var i = 0; i < mapMarkers3.length; i++){
+		map.removeLayer(mapMarkers3[i]);
+	}
+	marker3 = L.marker([obj.latitude, obj.longitude]).addTo(map);
+	mapMarkers3.push(marker3);
+}
+
+
+}, false);
+
+</script>
+
+</body>
+</html>

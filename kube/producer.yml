@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-producer-deployment
+  labels:
+    app: producer
+  namespace: kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      containers:
+      - name: producer-python
+        image: spiridon26/producer-python
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kafka
+  name: producer-svc
+spec:
+  selector:
+    app: producer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

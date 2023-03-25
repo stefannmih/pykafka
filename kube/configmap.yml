@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: start-kafka-script
+data:
+  start-kafka.sh: |
+    #!/bin/sh
+
+    # Change the ownership and permissions of the Kafka data directory
+    chown -R appuser:appuser /var/lib/kafka/data
+    chmod -R 700 /var/lib/kafka/data
+
+    # Start the Kafka process
+    exec /usr/bin/kafka-server-start /etc/kafka/server.properties

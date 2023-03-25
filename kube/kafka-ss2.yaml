@@ -1,40 +1,42 @@
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    app: kafka-broker
   name: kafka-svc
   namespace: kafka
+  labels:
+    app: kafka
 spec:
-  ports:
-  - port: 9092
   selector:
-    app: kafka-broker
+    app: kafka
+  ports:
+    - port: 9092
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  labels:
-    app: kafka-broker
-  name: kafka-broker
+  name: kafka
   namespace: kafka
+  labels:
+    app: kafka
 spec:
-  replicas: 1
+  replicas: 3
+  serviceName: kafka-svc
   selector:
     matchLabels:
-      app: kafka-broker
+      app: kafka
   template:
     metadata:
       labels:
-        app: kafka-broker
+        app: kafka
     spec:
-      hostname: kafka-broker
       containers:
       - env:
         - name: ALLOW_PLAINTEXT_LISTENER
           value: "yes"
         - name: KAFKA_CFG_ZOOKEEPER_CONNECT
-          value: zookeeper-service.kafka.svc.cluster.local:2181 #this should point to the zookeeper host
+          value: "zookeeper-0.zookeeper:2181,\  #this should point to the zookeeper host
+                  zookeeper-1.zookeeper:2181,\
+                  zookeeper-2.zookeeper:2181"
         - name: KAFKA_CFG_ADVERTISED_LISTENERS
           value: PLAINTEXT://kafka-svc.kafka.svc.cluster.local:9092 #this should point to the kafka host
         image: bitnami/kafka:latest
@@ -42,9 +44,16 @@ spec:
         name: kafka-broker
         ports:
         - containerPort: 9092
-
-
-
-
-
-        #zookeeper-service.kafka.svc.cluster.local
+        volumeMounts:
+          - name: logs
+            mountPath: /kafka-logs
+            subPath: logs
+  volumeClaimTemplates:
+    - metadata:
+        name: logs
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
